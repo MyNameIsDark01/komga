@@ -1,6 +1,7 @@
 package org.gotson.komga.domain.model
 
 import com.github.f4b6a3.tsid.TsidCreator
+import org.apache.commons.io.FilenameUtils
 import java.net.URL
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -24,3 +25,6 @@ data class Book(
   @delegate:Transient
   val path: Path by lazy { this.url.toURI().toPath() }
 }
+
+fun Book.restrictUrl(restrict: Boolean) =
+  if (restrict) copy(name = FilenameUtils.getName(name)) else this

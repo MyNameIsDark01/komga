@@ -12,6 +12,7 @@ import org.gotson.komga.application.tasks.HIGHEST_PRIORITY
 import org.gotson.komga.application.tasks.HIGH_PRIORITY
 import org.gotson.komga.application.tasks.LOWEST_PRIORITY
 import org.gotson.komga.application.tasks.TaskEmitter
+import org.gotson.komga.domain.model.Book
 import org.gotson.komga.domain.model.BookSearchWithReadProgress
 import org.gotson.komga.domain.model.Dimension
 import org.gotson.komga.domain.model.DomainEvent
@@ -25,6 +26,7 @@ import org.gotson.komga.domain.model.ROLE_ADMIN
 import org.gotson.komga.domain.model.ROLE_PAGE_STREAMING
 import org.gotson.komga.domain.model.ReadStatus
 import org.gotson.komga.domain.model.ThumbnailBook
+import org.gotson.komga.domain.model.restrictUrl
 import org.gotson.komga.domain.persistence.BookMetadataRepository
 import org.gotson.komga.domain.persistence.BookRepository
 import org.gotson.komga.domain.persistence.MediaRepository
@@ -242,6 +244,17 @@ class BookController(
       contentRestrictionChecker.checkContentRestriction(principal.user, it)
 
       it.restrictUrl(!principal.user.roleAdmin)
+    } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
+  @GetMapping("api/v1/books/{bookId}/info")
+  fun getOneBookInfo(
+    @AuthenticationPrincipal principal: KomgaPrincipal,
+    @PathVariable bookId: String,
+  ): Book =
+    bookRepository.findByIdOrNull(bookId)?.let { book ->
+      contentRestrictionChecker.checkContentRestriction(principal.user, book)
+
+      book.restrictUrl(!principal.user.roleAdmin)
     } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
   @GetMapping("api/v1/books/{bookId}/previous")
